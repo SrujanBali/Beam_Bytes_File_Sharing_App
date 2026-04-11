@@ -1,4 +1,4 @@
 venv
-requirements.txt
 .env
-myqycode.svg
+myqrcode.png
+test.py
