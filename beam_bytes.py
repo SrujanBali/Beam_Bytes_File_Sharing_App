@@ -6,6 +6,7 @@ from flask import Flask, render_template, send_from_directory
 import tkinter 
 from tkinter import Label, Tk
 import threading
+from pyngrok import ngrok
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,6 +26,7 @@ def get_ip():
 
 def on_closing():
     print("Shutting Down the Service...")
+    ngrok.disconnect(public_url)
     os.kill(os.getpid(), signal.SIGINT)
     root.destroy()
 
@@ -38,14 +40,14 @@ def download_file(filename):
     return send_from_directory(files_directory, filename, as_attachment = True)
 
 def run_flask():
-    app.run(host="0.0.0.0", port=PORT, debug=True, use_reloader = False)
+    app.run(host="127.0.0.1", port=int(PORT), debug=False, use_reloader = False)
     
 
 if __name__ == "__main__":
-    ip_address = get_ip()
-    link = f"http:{ip_address}:{PORT}"
+    public_url = ngrok.connect(PORT).public_url
+    print(f' * Public URL :- {public_url}')
 
-    url = pyqrcode.create(link)
+    url = pyqrcode.create(public_url)
     url.png("myqrcode.png", scale=12)
     
     flask_thread = threading.Thread(target=run_flask, daemon=True)
@@ -59,6 +61,6 @@ if __name__ == "__main__":
     root.geometry(f'{width}x{height + 60}')
     image_label = Label(root, image=qr_image)
     image_label.pack(pady=(0, 20))
-    tkinter.Label(root, text = f'Serving at :- {link}', font=("Helvetica", 18, "bold"), fg="white", bg="black").pack()
+    tkinter.Label(root, text = f'Serving at :- {public_url}', font=("Helvetica", 15, "bold"), fg="white", bg="black").pack()
     root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()
