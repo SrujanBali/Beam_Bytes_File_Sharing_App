@@ -55,8 +55,9 @@
       font-weight: bold;
     }
     .upload-section {
-      margin: none;
+      margin: 10px;
       padding: 10px;
+      cursor: pointer;
     }
     .upload-button {
       background-color: orange;
@@ -77,9 +78,22 @@
     <div class="container">
       <h1>Shared Files</h1>
       <div class="upload-section">
-        <form action="/upload"  method="post" enctype="multipart/form-data" class="uploadForm">
-          <label for="file-input" class="upload-button">Choose File to Upload</label>
-          <input type="file" name="file" id="file-input" style="display: none;" onchange="document.getElementsByClassName('uploadForm').submit()">
+        <form
+          action="/upload"
+          method="post"
+          enctype="multipart/form-data"
+          id="uploadForm"
+        >
+          <label for="file-input" class="upload-button"
+            >Choose File to Upload</label
+          >
+          <input
+            type="file"
+            name="file"
+            id="file-input"
+            style="display: none"
+            onchange= "upload_file()"
+          />
         </form>
       </div>
 
@@ -93,4 +107,9 @@
       </div>
     </div>
   </body>
+  <script>
+    const upload_file = () =>{
+      document.getElementById("uploadForm").submit()
+    }
+  </script>
 </html>

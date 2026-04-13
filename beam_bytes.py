@@ -2,8 +2,8 @@ import os
 import pyqrcode
 import socket
 import signal
-from flask import Flask, render_template, send_from_directory
-import tkinter 
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for
+import tkinter
 from tkinter import Label, Tk
 import threading
 from pyngrok import ngrok
@@ -26,9 +26,15 @@ def get_ip():
 
 def on_closing():
     print("Shutting Down the Service...")
-    ngrok.disconnect(public_url)
+    try:
+        ngrok.disconnect(public_url)
+        ngrok.kill()
+    except:
+        pass
+        
     os.kill(os.getpid(), signal.SIGINT)
     root.destroy()
+    os._exit(0)
 
 @app.route('/')
 def index():
@@ -38,6 +44,23 @@ def index():
 @app.route("/download/<filename>")
 def download_file(filename):
     return send_from_directory(files_directory, filename, as_attachment = True)
+
+@app.route('/upload', methods=["POST"])
+def upload_file():
+    if 'file'not in request.files:
+        return "No File Part", 400
+    
+    file = request.files["file"]
+
+    if file.filename == "":
+        return "No file selected", 400
+    
+    if file:
+        file_path = os.path.join(files_directory, file.filename)
+        file.save(file_path)
+        print("File Saved")
+        return redirect(url_for('index'))
+
 
 def run_flask():
     app.run(host="127.0.0.1", port=int(PORT), debug=False, use_reloader = False)
