@@ -9,9 +9,16 @@
     body {
       font-family:
         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg);
+      background-color: coral;
       margin: 0;
       padding: 20px;
+      background-image:
+        radial-gradient(gray 1px, transparent 1px),
+        radial-gradient(gray 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-position:
+        0 0,
+        10px 10px;
     }
     .container {
       max-width: 600px;
@@ -29,13 +36,13 @@
       gap: 12px;
     }
     .file-card {
-      background: white;
+      background: bisque;
       padding: 16px;
       border-radius: 12px;
       text-decoration: none;
-      color: #334155;
+      color: black;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       transition: transform 0.1s;
@@ -44,13 +51,37 @@
       transform: scale(0.98);
     }
     .download-icon {
-      color: var(--primary);
+      color: white;
       font-weight: bold;
+    }
+    .upload-section {
+      margin: none;
+      padding: 10px;
+    }
+    .upload-button {
+      background-color: orange;
+      font-size: large;
+      margin: 10px;
+      padding: 5px;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid;
+      border-right: 5px solid transparent;
+      border-left: 5px solid;
+    }
+    .upload-button:hover {
+      border-right: 5px solid;
+      border-top: 5px solid;
     }
   </style>
   <body>
     <div class="container">
       <h1>Shared Files</h1>
+      <div class="upload-section">
+        <form action="/upload"  method="post" enctype="multipart/form-data" class="uploadForm">
+          <label for="file-input" class="upload-button">Choose File to Upload</label>
+          <input type="file" name="file" id="file-input" style="display: none;" onchange="document.getElementsByClassName('uploadForm').submit()">
+        </form>
+      </div>
 
       <div class="file-list">
         {% for file in files %}
