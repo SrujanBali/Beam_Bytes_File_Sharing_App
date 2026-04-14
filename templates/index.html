@@ -11,7 +11,8 @@
         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: coral;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      position: relative;
       background-image:
         radial-gradient(gray 1px, transparent 1px),
         radial-gradient(gray 1px, transparent 1px);
@@ -21,7 +22,6 @@
         10px 10px;
     }
     .container {
-      max-width: 600px;
       margin: 0 auto;
     }
     h1 {
@@ -38,6 +38,8 @@
     .file-card {
       background: bisque;
       padding: 16px;
+      margin-left: 20px;
+      margin-right: 20px;
       border-radius: 12px;
       text-decoration: none;
       color: black;
@@ -51,7 +53,7 @@
       transform: scale(0.98);
     }
     .download-icon {
-      color: white;
+      color: black;;
       font-weight: bold;
     }
     .upload-section {
@@ -73,6 +75,46 @@
       border-right: 5px solid;
       border-top: 5px solid;
     }
+    .loading-screen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      justify-content: center;
+      z-index: 10;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+      text-align: center;
+      font-size: 50px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: beige;
+    }
+    .loading {
+      display: flex;
+      height: 100%;
+      justify-content: center;
+      align-items: center;
+    }
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #331910;
+      border-radius: 50%;
+      margin-left: 10px;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
   <body>
     <div class="container">
@@ -92,7 +134,7 @@
             name="file"
             id="file-input"
             style="display: none"
-            onchange= "upload_file()"
+            onchange="upload_file()"
           />
         </form>
       </div>
@@ -106,10 +148,16 @@
         {% endfor %}
       </div>
     </div>
+    <div class="loading-screen">
+      <div class="loading">Uploading File</div>
+      <div class="spinner"></div>
+    </div>
   </body>
   <script>
-    const upload_file = () =>{
-      document.getElementById("uploadForm").submit()
-    }
+    const upload_file = () => {
+      document.querySelector(".loading-screen").style.display = "flex";
+      document.body.style.overflow = "hidden";
+      document.getElementById("uploadForm").submit();
+    };
   </script>
 </html>
