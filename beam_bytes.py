@@ -1,4 +1,5 @@
 import os
+import sys
 import pyqrcode
 import signal
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
@@ -8,13 +9,18 @@ import threading
 from pyngrok import ngrok
 from dotenv import load_dotenv
 
-load_dotenv()
-app = Flask(__name__)
+def get_resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path  = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
-PORT = os.getenv("PORT")
-base_path = os.getenv("BASE_PATH")
-foldername = os.getenv("FOLDERNAME")
-files_directory = os.path.join(base_path, foldername)
+load_dotenv()
+template_dir = get_resource_path('templates')
+app = Flask(__name__, template_folder=template_dir)
+
+PORT = os.getenv("PORT") or 8010
 
 class Beam_Bytes_State:
     def __init__(self):
@@ -26,12 +32,14 @@ state = Beam_Bytes_State()
 
 @app.route('/')
 def index():
-    files = [f for f in os.listdir(files_directory) if os.path.isfile(os.path.join(files_directory, f))]
-    return render_template("index.html", files = files)
+    if not state.shared_folder:
+        return ("No folder selected on hosting device", 403)
+    files = os.listdir(state.shared_folder)
+    return  render_template('index.html', files=files)
 
 @app.route("/download/<filename>")
 def download_file(filename):
-    return send_from_directory(files_directory, filename, as_attachment = True)
+    return send_from_directory(state.shared_folder, filename, as_attachment = True)
 
 @app.route('/upload', methods=["POST"])
 def upload_file():
@@ -44,7 +52,7 @@ def upload_file():
         return "No file selected", 400
     
     if file:
-        file_path = os.path.join(files_directory, file.filename)
+        file_path = os.path.join(state.shared_folder, file.filename)
         file.save(file_path)
         print("File Saved")
         return redirect(url_for('index'))

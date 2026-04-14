@@ -2,3 +2,6 @@ venv
 .env
 myqrcode.png
 test.py
+build
+dist
+Beam Bytes.spec
