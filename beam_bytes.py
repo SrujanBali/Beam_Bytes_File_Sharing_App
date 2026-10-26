@@ -43,20 +43,21 @@ def download_file(filename):
 
 @app.route('/upload', methods=["POST"])
 def upload_file():
-    if 'file'not in request.files:
+    if 'file[]'not in request.files and 'file' not in request.files:
         return "No File Part", 400
     
-    file = request.files["file"]
+    uploaded_files = request.files.getlist('file[]')
 
-    if file.filename == "":
-        return "No file selected", 400
-    
-    if file:
-        file_path = os.path.join(state.shared_folder, file.filename)
-        file.save(file_path)
-        print("File Saved")
-        return redirect(url_for('index'))
+    for file in uploaded_files:
+        if file.filename == "":
+            continue
+        
+        if file:
+            file_path = os.path.join(state.shared_folder, file.filename)
+            file.save(file_path)
+            print("File Saved")
 
+    return redirect(url_for('index'))
 
 def run_flask():
     app.run(host="127.0.0.1", port=int(PORT), debug=False, use_reloader = False)
@@ -80,17 +81,17 @@ class Beam_Bytes_GUI:
         self.root.title("Beam Bytes")
         self.root.geometry("600x700")
 
-        self.setup_frame = tkinter.Frame(root, padx=20, pady=20)
+        self.setup_frame = tkinter.Frame(root, padx=20, pady=20, bg="teal")
         self.setup_frame.pack(expand=True, fill="both")
 
-        tkinter.Label(self.setup_frame, text="Beam Bytes - Setup", font=("Arial", 18, "bold")).pack(pady=10)
-        tkinter.Label(self.setup_frame, text="Select the folder you want to share").pack()
+        tkinter.Label(self.setup_frame, text="Beam Bytes - Setup", font=("Arial", 22, "bold"), bg="teal").pack(pady=10)
+        tkinter.Label(self.setup_frame, text="Select the folder you want to share", font=("Arial", 16), bg="teal").pack(pady=5)
 
-        self.path_label = tkinter.Label(self.setup_frame, text="No folder selected")
+        self.path_label = tkinter.Label(self.setup_frame, text="No folder selected", font=("Arial", 12), bg="teal")
         self.path_label.pack(pady=10)
 
-        tkinter.Button(self.setup_frame, text="Browse Folder", command=self.browse).pack(pady=5)
-        self.start_button = tkinter.Button(self.setup_frame, text="Start Sharing", font=("Helvetica", 15, "bold"), state="disabled", bg="orange", command=self.start_service, width=50, height=2)
+        tkinter.Button(self.setup_frame, text="Browse Folder", font=("Arial", 12) , command=self.browse, width=30, height=2, bg="skyblue", fg="black", borderwidth=4).pack(pady=10)
+        self.start_button = tkinter.Button(self.setup_frame, text="Start Sharing", font=("Helvetica", 18, "bold"), state="disabled", bg="orange", command=self.start_service, width=50, height=2)
         self.start_button.pack(pady=10)
 
     def browse(self):
@@ -115,23 +116,24 @@ class Beam_Bytes_GUI:
             self.root.destroy()
 
     def show_qr(self, url):
-        qr_frame = tkinter.Frame(self.root, padx=10, pady=10)
+        qr_frame = tkinter.Frame(self.root, padx=10, pady=10, bg="lightgreen")
         qr_frame.pack(expand=True, fill="both")
-        tkinter.Label(qr_frame, text="Scan to Acess Files", font=("Arial", 18, "bold")).pack(pady=10)
+        tkinter.Label(qr_frame, text="Scan to Access Files", font=("Arial", 18, "bold"), bg="lightgreen").pack(pady=10)
 
         qr = pyqrcode.create(url)
         qr.png("myqrcode.png", scale=12)
         qr_image = tkinter.PhotoImage(file="myqrcode.png")
-        qr_label = tkinter.Label(qr_frame, image = qr_image)
+        qr_label = tkinter.Label(qr_frame, image = qr_image, bg="black")
         qr_label.image = qr_image
         qr_label.pack(pady=(0,20))
 
-        tkinter.Label(self.root, text = f'Serving at :- {url}', font=("Helvetica", 15, "bold"), fg="white", bg="black").pack()
+        tkinter.Label(self.root, text = f'Serving at :- {url}', font=("Helvetica", 15, "bold"), fg="white", bg="black").pack(pady=2)
 
         
 
 if __name__ == "__main__":
     root = Tk()
     root.protocol("WM_DELETE_WINDOW", on_closing)
+    root.config(bg="black")
     app_gui = Beam_Bytes_GUI(root)
     root.mainloop()
