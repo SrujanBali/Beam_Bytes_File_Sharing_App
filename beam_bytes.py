@@ -4,11 +4,18 @@ import pyqrcode
 import signal
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 import socket
+from werkzeug.serving import make_server
 import tkinter
 from tkinter import Tk, filedialog, messagebox
 import threading
 from pyngrok import ngrok
+from PIL import Image, ImageTk
 from dotenv import load_dotenv
+
+if sys.stdout is None:
+    log_file = open("beam_bytes_error.log", "w")
+    sys.stdout = log_file
+    sys.stderr = log_file
 
 def get_resource_path(relative_path):
     try:
@@ -22,6 +29,8 @@ template_dir = get_resource_path('templates')
 app = Flask(__name__, template_folder=template_dir)
 
 PORT = os.getenv("PORT") or 8010
+
+server_instance = None
 
 
 class Beam_Bytes_State:
@@ -71,7 +80,16 @@ def upload_file():
     return redirect(url_for('index'))
 
 def run_flask():
-    app.run(host="0.0.0.0", port=int(PORT), debug=False, use_reloader = False)
+    global server_instance
+    server_instance = make_server('0.0.0.0', int(PORT), app)
+    server_instance.serve_forever()
+
+def stop_flask():
+    global server_instance
+    if server_instance:
+        server_instance.shutdown()
+        server_instance = None
+        print("Flask server ended")
 
 def on_closing():
     print("Shutting Down the Service...")
@@ -118,7 +136,7 @@ class Beam_Bytes_GUI:
         self.mode_dropdown.config(width=25 , bg="orange", fg="black", font=("Arial", 12, "bold"))
         self.mode_dropdown.pack(padx=10, side=tkinter.LEFT)
 
-        self.start_button = tkinter.Button(self.setup_frame, text="Start Sharing", font=("Helvetica", 18, "bold"), state="disabled", bg="gray", command=self.start_service, width=50, height=2)
+        self.start_button = tkinter.Button(self.setup_frame, text="Start Sharing", font=("Helvetica", 18, "bold"), state="disabled", bg="#2a2a2a", command=self.start_service, width=50, height=2)
         self.start_button.pack(pady=10)
 
 
@@ -126,7 +144,7 @@ class Beam_Bytes_GUI:
         folder = filedialog.askdirectory()
         if folder:
             state.shared_folder = folder
-            self.path_label.config(text=folder, fg="black")
+            self.path_label.config(text=folder, fg="#f8fafc")
             self.start_button.config(state="normal", bg="green")
 
     def start_service(self):
@@ -149,19 +167,44 @@ class Beam_Bytes_GUI:
                 messagebox.showerror("Ngrok Error : ", f"Failed to start tunnel: {e}")
                 self.root.destroy()
 
+    def end_service(self):
+        selected_mode = self.mode_var.get()
+
+        stop_flask()
+        state.shared_folder = ""
+        self.path_label.config(text="No folder selected")
+        self.start_button.config(state="disabled", bg="#2a2a2a")
+
+        if "Global (Ngrok)" in selected_mode:
+            try:
+                ngrok.disconnect(state.public_url)
+                ngrok.kill()
+                print("Ngrok ended")
+            except Exception as e:
+                print(f"Error killing ngrok : {e}")
+
+        self.qr_frame.pack_forget()
+        self.setup_frame.pack(expand=True, fill="both")
+        self.root.title("Beam Bytes - Setup")
+
     def show_qr(self, url, title="Scan to Access Files"):
-        qr_frame = tkinter.Frame(self.root, padx=10, pady=10, bg="lightgreen")
-        qr_frame.pack(expand=True, fill="both")
-        tkinter.Label(qr_frame, text="Scan to Access Files", font=("Arial", 18, "bold"), bg="lightgreen").pack(pady=10)
+        self.qr_frame = tkinter.Frame(self.root, padx=10, pady=5, bg="lightgreen")
+        self.qr_frame.pack(expand=True, fill="both")
+        tkinter.Label(self.qr_frame, text="Scan to Access Files", font=("Arial", 18, "bold"), bg="lightgreen").pack(pady=10)
 
         qr = pyqrcode.create(url)
         qr.png("myqrcode.png", scale=12)
-        qr_image = tkinter.PhotoImage(file="myqrcode.png")
-        qr_label = tkinter.Label(qr_frame, image = qr_image, bg="black")
-        qr_label.image = qr_image
-        qr_label.pack(pady=(0,20))
+        pil_img = Image.open("myqrcode.png")
+        pil_img = pil_img.resize((500, 500), Image.Resampling.NEAREST)
 
-        tkinter.Label(self.root, text = f'Serving at :- {url}', font=("Helvetica", 15, "bold"), fg="white", bg="black").pack(pady=2)
+        self.qr_image = ImageTk.PhotoImage(pil_img)
+        qr_label = tkinter.Label(self.qr_frame, image = self.qr_image, bg="black")
+        qr_label.image = self.qr_image
+        qr_label.pack(pady=(0,20))
+        tkinter.Label(self.qr_frame, text = f'Serving at :- {url}', font=("Helvetica", 15, "bold"), fg="white", bg="black").pack(pady=(0, 20), fill="x")
+        self.end_button = tkinter.Button(self.qr_frame, text="End Service", font=("Helvetica", 12, "bold") , bg="red", width=20, height=2 , command=self.end_service)
+        self.end_button.pack(pady=1)
+
 
         
 
