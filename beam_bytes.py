@@ -17,6 +17,8 @@ if sys.stdout is None:
     sys.stdout = log_file
     sys.stderr = log_file
 
+PORT = os.getenv("PORT") or 8010
+
 def get_resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -28,10 +30,7 @@ load_dotenv()
 template_dir = get_resource_path('templates')
 app = Flask(__name__, template_folder=template_dir)
 
-PORT = os.getenv("PORT") or 8010
-
 server_instance = None
-
 
 class Beam_Bytes_State:
     def __init__(self):
@@ -110,6 +109,10 @@ class Beam_Bytes_GUI:
         self.root.title("Beam Bytes")
         self.root.geometry("600x700")
         self.root.config(bg="black")
+        try:
+            self.root.iconbitmap(get_resource_path("beambytes.ico"))
+        except Exception as e:
+            print(f"Error file applying icon : {e}")
 
         self.setup_frame = tkinter.Frame(root, padx=20, pady=20, bg="#121212")
         self.setup_frame.pack(expand=True, fill="both")
