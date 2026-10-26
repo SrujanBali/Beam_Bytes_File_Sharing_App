@@ -1,6 +1,6 @@
 # Beam Bytes - A File Sharing Application
 
-Ever found yourself needing a quick and personalized tool to share files directly to your PC? This application solves that very problem by creating a seamless bridge between your devices.
+Ever found yourself needing a quick and personalized tool to share files directly from and to your PC? This application solves that very problem by creating a seamless bridge between your devices.
 
 ---
 
@@ -60,7 +60,7 @@ pip install pyinstaller
 Run the following command to create the exe file
 
 ```bash
-pyinstaller --noconfirm --onefile --windowed --add-data "templates;templates" --name "BeamBytes" beam_bytes.py
+pyinstaller BeamBytes.spec
 ```
 
 You will find the exe file in the dist folder after Installation.
@@ -69,15 +69,18 @@ You will find the exe file in the dist folder after Installation.
 ###  How It Works
 
 1. **Launch the App** Run the application to initialize the interface.  
-   <img width="500" alt="App Startup" src="https://github.com/user-attachments/assets/12c3190a-2db3-4cc6-bc7c-769e232e7af7" />
+   <img width="606" height="733" alt="Screenshot 2026-10-26 184924" src="https://github.com/user-attachments/assets/e034fe30-3db7-4c21-94f1-f020b216f8ae" />
 
 2. **Select Your Directory** Select the folder you want to share files from, or the destination where you want to receive files.  
-   <img width="500" alt="Folder Selection" src="https://github.com/user-attachments/assets/8d58338a-cdfe-4cf0-970e-02e25f9740f8" />
+   <img width="603" height="732" alt="Screenshot 2026-10-26 185005" src="https://github.com/user-attachments/assets/1e299728-5fa9-4fad-a8f0-0304d7b97d68" />
 
-3. **Start Sharing** Click **"Start Sharing"**. A QR Code and a unique URL will be generated. Simply scan the code or visit the link on any other device.  
-   <img width="500" alt="Sharing Active" src="https://github.com/user-attachments/assets/4295b87e-0b3d-4eaa-bf0d-27a64edded82" />
+3. **Select Hosting Mode** Select the hosting mode. Beam Bytes features Local (localhost) and Global (Ngrok) hosting.
+   <img width="608" height="729" alt="Screenshot 2026-10-26 185029" src="https://github.com/user-attachments/assets/f60690fe-8162-4168-9b1d-4a5642faba2f" />
 
-4. **Transfer Files** Use the mobile-friendly web interface to download from or upload to your PC instantly.
+4. **Start Sharing** Click **"Start Sharing"**. A QR Code and a unique URL will be generated. Simply scan the code or visit the link on any other device.  
+   <img width="608" height="735" alt="Screenshot 2026-10-26 185109" src="https://github.com/user-attachments/assets/f890ecb8-d67e-4122-875d-466fe501652c" />
+
+5. **Transfer Files** Use the mobile-friendly web interface to download from or upload to your PC instantly.
 
    <p align="left">
      <img src="https://github.com/user-attachments/assets/1fc19b37-2eeb-4fd0-aa46-11f0c7e8cd11" width="30%" />
