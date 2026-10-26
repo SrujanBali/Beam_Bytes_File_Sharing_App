@@ -3,6 +3,7 @@ import sys
 import pyqrcode
 import signal
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
+import socket
 import tkinter
 from tkinter import Tk, filedialog, messagebox
 import threading
@@ -22,6 +23,7 @@ app = Flask(__name__, template_folder=template_dir)
 
 PORT = os.getenv("PORT") or 8010
 
+
 class Beam_Bytes_State:
     def __init__(self):
         self.shared_folder = ""
@@ -29,6 +31,15 @@ class Beam_Bytes_State:
 
 state = Beam_Bytes_State()
 
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
+    except Exception:
+        return "127.0.0.1"
 
 @app.route('/')
 def index():
@@ -60,7 +71,7 @@ def upload_file():
     return redirect(url_for('index'))
 
 def run_flask():
-    app.run(host="127.0.0.1", port=int(PORT), debug=False, use_reloader = False)
+    app.run(host="0.0.0.0", port=int(PORT), debug=False, use_reloader = False)
 
 def on_closing():
     print("Shutting Down the Service...")
@@ -80,19 +91,36 @@ class Beam_Bytes_GUI:
         self.root = root
         self.root.title("Beam Bytes")
         self.root.geometry("600x700")
+        self.root.config(bg="black")
 
-        self.setup_frame = tkinter.Frame(root, padx=20, pady=20, bg="teal")
+        self.setup_frame = tkinter.Frame(root, padx=20, pady=20, bg="#121212")
         self.setup_frame.pack(expand=True, fill="both")
 
-        tkinter.Label(self.setup_frame, text="Beam Bytes - Setup", font=("Arial", 22, "bold"), bg="teal").pack(pady=10)
-        tkinter.Label(self.setup_frame, text="Select the folder you want to share", font=("Arial", 16), bg="teal").pack(pady=5)
+        tkinter.Label(self.setup_frame, text="Beam Bytes - Setup", font=("Arial", 22, "bold"), bg="#121212", fg="#f8fafc").pack(pady=(5, 50))
+        tkinter.Label(self.setup_frame, text="Select the folder you want to share", font=("Arial", 16), bg="#121212", fg="#f8fafc").pack(pady=(0, 10))
 
-        self.path_label = tkinter.Label(self.setup_frame, text="No folder selected", font=("Arial", 12), bg="teal")
-        self.path_label.pack(pady=10)
+        self.path_label = tkinter.Label(self.setup_frame, text="No folder selected", font=("Arial", 12), bg="#121212", fg="#f8fafc")
+        self.path_label.pack(pady=(0, 20))
 
-        tkinter.Button(self.setup_frame, text="Browse Folder", font=("Arial", 12) , command=self.browse, width=30, height=2, bg="skyblue", fg="black", borderwidth=4).pack(pady=10)
-        self.start_button = tkinter.Button(self.setup_frame, text="Start Sharing", font=("Helvetica", 18, "bold"), state="disabled", bg="orange", command=self.start_service, width=50, height=2)
+        tkinter.Button(self.setup_frame, text="Browse Folder", font=("Arial", 12, "bold") , command=self.browse, width=30, height=2, bg="#578fe4", fg="black", borderwidth=4).pack(pady=(0, 15))
+
+        self.hosting_frame = tkinter.Frame(self.setup_frame, bg="#121212")
+        self.hosting_frame.pack(pady=40)
+
+        tkinter.Label(self.hosting_frame, text="Select Hosting Mode: ", bg="#121212", font=("Helvetica", 12), fg="#f8fafc").pack(padx=10, side=tkinter.LEFT)
+        self.mode_var = tkinter.StringVar(value="Local Wifi")
+        self.mode_dropdown = tkinter.OptionMenu(
+            self.hosting_frame,
+            self.mode_var,
+            "Local Wifi",
+            "Global (Ngrok)"
+        )
+        self.mode_dropdown.config(width=25 , bg="orange", fg="black", font=("Arial", 12, "bold"))
+        self.mode_dropdown.pack(padx=10, side=tkinter.LEFT)
+
+        self.start_button = tkinter.Button(self.setup_frame, text="Start Sharing", font=("Helvetica", 18, "bold"), state="disabled", bg="gray", command=self.start_service, width=50, height=2)
         self.start_button.pack(pady=10)
+
 
     def browse(self):
         folder = filedialog.askdirectory()
@@ -102,20 +130,26 @@ class Beam_Bytes_GUI:
             self.start_button.config(state="normal", bg="green")
 
     def start_service(self):
+        selected_mode = self.mode_var.get()
         self.setup_frame.pack_forget()
         self.root.title("Beam Bytes - Live")
 
         threading.Thread(target=run_flask, daemon=True).start()
 
-        try:
-            state.public_url = ngrok.connect(PORT).public_url
-            print(f' * Public URL :- {state.public_url}')
-            self.show_qr(state.public_url)
-        except Exception as e:
-            messagebox.showerror("Ngrok Error : ", f"Failed to start tunnel: {e}")
-            self.root.destroy()
+        if selected_mode == "Local Wifi":
+            local_ip = get_local_ip()
+            local_url = f"http://{local_ip}:{PORT}"
+            self.show_qr(local_url, title="Scan for Fast Local Wifi Transfer")
+        else: 
+            try:
+                state.public_url = ngrok.connect(PORT).public_url
+                print(f' * Public URL :- {state.public_url}')
+                self.show_qr(state.public_url, title="Scan for Global Ngrok Transfer")
+            except Exception as e:
+                messagebox.showerror("Ngrok Error : ", f"Failed to start tunnel: {e}")
+                self.root.destroy()
 
-    def show_qr(self, url):
+    def show_qr(self, url, title="Scan to Access Files"):
         qr_frame = tkinter.Frame(self.root, padx=10, pady=10, bg="lightgreen")
         qr_frame.pack(expand=True, fill="both")
         tkinter.Label(qr_frame, text="Scan to Access Files", font=("Arial", 18, "bold"), bg="lightgreen").pack(pady=10)
@@ -134,6 +168,5 @@ class Beam_Bytes_GUI:
 if __name__ == "__main__":
     root = Tk()
     root.protocol("WM_DELETE_WINDOW", on_closing)
-    root.config(bg="black")
     app_gui = Beam_Bytes_GUI(root)
     root.mainloop()
