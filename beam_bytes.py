@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 import pyqrcode
 import signal
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
@@ -13,9 +14,17 @@ from PIL import Image, ImageTk
 from dotenv import load_dotenv
 
 if sys.stdout is None:
-    log_file = open("beam_bytes_error.log", "w")
+    log_file = open("beam_bytes_error.log", "w", buffering=1)
     sys.stdout = log_file
     sys.stderr = log_file
+
+if sys.platform == "win32":
+    _old_init = subprocess.Popen.__init__
+    def _new_init(self, *args, **kwargs):
+        if "creationflags" not in kwargs:
+            kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+        _old_init(self, *args, **kwargs)
+    subprocess.Popen.__init__ = _new_init
 
 PORT = os.getenv("PORT") or 8010
 
@@ -80,15 +89,22 @@ def upload_file():
 
 def run_flask():
     global server_instance
-    server_instance = make_server('0.0.0.0', int(PORT), app)
-    server_instance.serve_forever()
+    print(f"Starting Flask Server on port {PORT}")
+    try:
+
+        server_instance = make_server('0.0.0.0', int(PORT), app)
+        server_instance.serve_forever()
+    except Exception as e:
+        print(f" * Flask server error: {e}")
+    print(" * Flask server background thread stopped.")
 
 def stop_flask():
     global server_instance
     if server_instance:
+        print(" * Shutting down Flask server instance...")
         server_instance.shutdown()
         server_instance = None
-        print("Flask server ended")
+        print(" * Flask server successfully ended.")
 
 def on_closing():
     print("Shutting Down the Service...")
