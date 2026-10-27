@@ -96,3 +96,16 @@ You will find the exe file in the dist folder after Installation.
      <img src="https://github.com/user-attachments/assets/e4f6ecfe-f363-4817-bab7-87946c1289f6" width="30%" />
      <img src="https://github.com/user-attachments/assets/010c181b-aa2e-4ef8-80c6-c4fb6f9d7ff3" width="30%" />
    </p>
+
+## Project Structure
+```
+Beam_Bytes_File_Sharing_App/
+├── .gitignore
+├── BeamBytes.spec
+├── README.md
+├── beam_bytes.py
+├── beambytes.ico
+├── requirements.txt
+└── templates/
+    └── index.html
+```
