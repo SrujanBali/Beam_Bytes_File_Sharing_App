@@ -1,10 +1,19 @@
 # Beam Bytes - A File Sharing Application
 
 Ever found yourself needing a quick and personalized tool to share files directly from and to your PC? This application solves that very problem by creating a seamless bridge between your devices.
+---
+<img width="480" height="1040" alt="git_project" src="https://github.com/user-attachments/assets/5d35badc-d117-461d-8918-2046619dfc57" />
+
+
+---
+## Features
+- **Modern Tkinter GUI** for easy folder selection and state management.
+- **Dual Hosting Mode** that lets users share files globally using Ngrok servers by simply sharing the QR code or share files locally (10-100x faster than Ngrok).
+- **Dynamic QR Code Generation** for global and local hosting.
 
 ---
 
-### 🛠 Tech Stack
+## Tech Stack
 
 | Technology | Purpose |
 | :--- | :--- |
@@ -15,7 +24,7 @@ Ever found yourself needing a quick and personalized tool to share files directl
 | **HTML/CSS/JS** | Frontend webpage to accompany the Flask server |
 
 ---
-### Notice - Important ‼️
+## Notice - Important ‼️
 - You will need to first add your own Ngrok Auth Token after signing up with Ngrok to run the tunneling
 - Use the following command to add your auth token after installing the dependencies from requirements.txt
 ```bash
@@ -49,7 +58,7 @@ Start the program
 ```
 ---
 
-### Installation
+## Installation
 
 First install PyInstaller
 
@@ -66,7 +75,7 @@ pyinstaller BeamBytes.spec
 You will find the exe file in the dist folder after Installation.
 ---
 
-###  How It Works
+##  How It Works
 
 1. **Launch the App** Run the application to initialize the interface.  
    <img width="606" height="733" alt="Screenshot 2026-10-26 184924" src="https://github.com/user-attachments/assets/e034fe30-3db7-4c21-94f1-f020b216f8ae" />
